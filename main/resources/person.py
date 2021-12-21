@@ -7,15 +7,15 @@ def person(): # 전체 환자 수
 
 @app.route('/person/gender/<string:gender>', methods=['GET'])
 def personByGender(gender): # 성별 환자 수
-  pass
+  return { 'count': len(PersonModel.find_person_by_gender(gender))}
 
 @app.route('/person/race/<string:race>', methods=['GET'])
 def personByRace(race): # 인종별 환자 수
-  pass
+  return { 'count': len(PersonModel.find_person_by_race(race))}
 
 @app.route('/person/ethnicity/<string:ethnicity>', methods=['GET'])
 def personByEthnicity(ethnicity): # 민족별 환자 수
-  pass
+  return { 'count': len(PersonModel.find_person_by_ethnicity(ethnicity))}
 
 @app.route('/person/death/<string:death>', methods=['GET'])
 def personByDeath(death): # 사망 환자 수
