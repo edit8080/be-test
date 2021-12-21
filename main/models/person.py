@@ -3,18 +3,18 @@ from app import db
 class PersonModel(db.Model):
   __tablename__ = "person"
   person_id = db.Column(db.BigInteger, primary_key=True)
-  gender_concept_id = db.Column(db.Integer, db.ForeignKey('de.concept.concept_id'))
+  gender_source_value = db.Column(db.String(50), db.ForeignKey('concept.concept_id'))
   birth_datetime = db.Column(db.DateTime)
-  race_concept_id = db.Column(db.Integer, db.ForeignKey('de.concept.concept_id'))
-  ethnicity_concept_id = db.Column(db.Integer)
+  race_source_value = db.Column(db.String(50), db.ForeignKey('concept.concept_id'))
+  ethnicity_source_value = db.Column(db.String(50))
 
   def json(self):
     return {
       'person_id': self.person_id,
-      'gender_concept_id': self.gender_concept_id,
-      'birth_datetime': self.birth_datetime,
-      'race_concept_id': self.race_concept_id,
-      'ethnicity_concept_id': self.ethnicity_concept_id,
+      'gender': self.gender_source_value,
+      'birth': self.birth_datetime,
+      'race': self.race_source_value,
+      'ethnicity_concept_id': self.ethnicity_source_value,
     }
 
   @classmethod
