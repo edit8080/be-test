@@ -3,6 +3,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from api import load_resources
 
 load_dotenv()
 
@@ -12,6 +13,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 api = Api(app)
+
+load_resources(api)
 
 if __name__ == '__main__':
   db.init_app(app)
