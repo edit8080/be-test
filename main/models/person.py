@@ -38,8 +38,8 @@ class PersonModel(db.Model):
     return [person.json() for person in cls.query.filter_by(ethnicity_source_value=ethnicity).all()]
 
   @classmethod
-  def find_person_by_death(cls, death):
-    if death == 'T':
+  def find_person_by_death(cls, isDead):
+    if isDead:
       return [person.json() for person in db.session.query(PersonModel).join(DeathModel).all()]
-    elif death == 'F':
+    else:
       return [person.json() for person in db.session.query(PersonModel).outerjoin(DeathModel).filter(DeathModel.death_date.is_(None)).all()]
