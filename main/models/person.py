@@ -1,4 +1,5 @@
 from app import db
+from models.death import DeathModel
 
 class PersonModel(db.Model):
   __tablename__ = "person"
@@ -35,3 +36,10 @@ class PersonModel(db.Model):
   @classmethod
   def find_person_by_ethnicity(cls, ethnicity):
     return [person.json() for person in cls.query.filter_by(ethnicity_source_value=ethnicity).all()]
+
+  @classmethod
+  def find_person_by_death(cls, death):
+    if death == 'T':
+      return [person.json() for person in db.session.query(PersonModel).join(DeathModel).all()]
+    elif death == 'F':
+      return [person.json() for person in db.session.query(PersonModel).outerjoin(DeathModel).filter(DeathModel.death_date.is_(None)).all()]
