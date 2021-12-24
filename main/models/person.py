@@ -7,6 +7,8 @@ class PersonModel(db.Model):
   birth_datetime = db.Column(db.DateTime)
   race_source_value = db.Column(db.String(50), db.ForeignKey('concept.concept_id'))
   ethnicity_source_value = db.Column(db.String(50))
+  
+  death_date = db.relationship('DeathModel')
 
   def json(self):
     return {
@@ -15,6 +17,7 @@ class PersonModel(db.Model):
       'birth': self.birth_datetime,
       'race': self.race_source_value,
       'ethnicity': self.ethnicity_source_value,
+      'death_date': self.death_date[0].json()['death_date'] if len(self.death_date) > 0 else None
     }
 
   @classmethod
