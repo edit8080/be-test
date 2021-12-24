@@ -1,4 +1,5 @@
 from app import app
+from flask import request
 from models.person import PersonModel
 
 @app.route('/person', methods=['GET'])
@@ -17,6 +18,7 @@ def personByRace(race): # 인종별 환자 수
 def personByEthnicity(ethnicity): # 민족별 환자 수
   return { 'count': len(PersonModel.find_person_by_ethnicity(ethnicity))}
 
-@app.route('/person/death/<string:death>', methods=['GET'])
-def personByDeath(death): # 사망 환자 수
-  pass
+@app.route('/person/death', methods=['GET'])
+def personByDeath(): # 사망 환자 수
+   isDead = request.args.get('isDead') # 'True' or 'False'
+   return { 'count': len(PersonModel.find_person_by_death(isDead and 'True'))}
