@@ -15,6 +15,9 @@ api = Api(app)
 
 from resources.person import *
 from resources.visit import *
+from resources.condition import *
+from resources.drug import *
+
 
 if __name__ == '__main__':
   db.init_app(app)
