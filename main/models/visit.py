@@ -12,12 +12,12 @@ class VisitModel(db.Model):
 
   @classmethod
   def check_visit_concept(visit_concept_id):
-    if visit_concept_id == 9201:
-      return 'Inpatient Visit'
-    elif visit_concept_id == 9202:
-      return 'Outpatient Visit'
-    elif visit_concept_id == 9203:
-      return 'Emergency Room Visit'
+    visit_concept = {
+      9201: 'Inpatient Visit',
+      9202: 'Outpatient Visit',
+      9203: 'Emergency Room Visit'
+    }
+    return visit_concept[visit_concept_id]
 
   def json(self):
     return {
