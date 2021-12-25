@@ -1,16 +1,21 @@
 from app import db
+from sqlalchemy import func
 from models.person import PersonModel
+from models.concept import ConceptModel
 
 # Visit : Person = 1 : N
 class VisitModel(db.Model):
   __tablename__ = "visit_occurrence"
   visit_occurrence_id = db.Column(db.BigInteger, primary_key=True)
-  visit_concept_id = db.Column(db.BigInteger)
-  visit_start_datetime = db.Column(db.Date)
-  visit_end_datetime = db.Column(db.Date)
+  visit_concept_id = db.Column(db.Integer)
+  visit_start_datetime = db.Column(db.DateTime)
+  visit_end_datetime = db.Column(db.DateTime)
 
   person_id = db.Column(db.BigInteger, db.ForeignKey('person.person_id'))
   person = db.relationship('PersonModel')
+
+  preceding_visit_occurrence_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  concept = db.relationship('ConceptModel')
 
   @classmethod
   def check_visit_concept(cls, visit_concept_id):
@@ -23,14 +28,17 @@ class VisitModel(db.Model):
 
   def json(self):
     return {
+      'visit_occurrence_id': self.visit_occurrence_id,
       'visit_concept': VisitModel.check_visit_concept(self.visit_concept_id),
       'visit_start_datetime': self.visit_start_datetime,
       'visit_end_datetime': self.visit_end_datetime,
-      'person': self.person.json()
+      'person': self.person.json(),
+      'concept': self.concept.json()
     }
 
   def tuple_to_json(self):
     return {
+      'visit_occurrence_id': self.visit_occurrence_id,
       'visit_concept': VisitModel.check_visit_concept(self.visit_concept_id),
       'visit_start_datetime': self.visit_start_datetime,
       'visit_end_datetime': self.visit_end_datetime,
@@ -61,17 +69,42 @@ class VisitModel(db.Model):
   @classmethod
   def convert_find_by_age_json(cls, row):
     return {
-      'visit_concept': VisitModel.check_visit_concept(row[0]),
-      'visit_start_datetime': row[1],
-      'visit_end_datetime': row[2],
-      'person_id': row[3],
-      'birth_datetime': row[4]
+      'visit_occurrence_id': row[0],
+      'visit_concept': VisitModel.check_visit_concept(row[1]),
+      'visit_start_datetime': row[2],
+      'visit_end_datetime': row[3],
+      'person_id': row[4],
+      'birth_datetime': row[5]
     }
 
   @classmethod
   def find_visit_by_age(cls, age_unit): # age_unit = 10 unit (10, 20, ...)
-    statement = 'SELECT visit_concept_id, visit_start_date, visit_end_date, v.person_id, birth_datetime \
+    statement = 'SELECT visit_occurrence_id, visit_concept_id, visit_start_date, visit_end_date, v.person_id, birth_datetime \
       FROM visit_occurrence AS v JOIN person AS p ON v.person_id = p.person_id\
       WHERE EXTRACT(year FROM AGE(CURRENT_DATE, birth_datetime)) BETWEEN :age_unit_start AND :age_unit_end'
 
     return [cls.convert_find_by_age_json(visit) for visit in db.session.execute(statement, {'age_unit_start': age_unit, 'age_unit_end': age_unit + 9} ).all()] # SQL execute result -> tuple Array
+
+  ### concept 설명
+  
+  def concept_serialize(self):
+    serialize = self.json()
+    return { 'visit_occurrence_id': serialize['visit_occurrence_id'], 'preceding': serialize['concept'] }
+
+  @classmethod
+  def find_visit_concept_by_name(cls, name):
+    concepts = db.session.query(VisitModel).join(ConceptModel).filter(ConceptModel.concept_name.ilike("%"+name+"%")).all()
+
+    return [concept.concept_serialize() for concept in concepts]
+
+  @classmethod
+  def find_visit_concept_by_domain(cls, domain):
+    concepts = db.session.query(VisitModel).join(ConceptModel).filter(func.lower(ConceptModel.domain_id) == func.lower(domain)).all()
+    
+    return [concept.concept_serialize() for concept in concepts]
+
+  @classmethod
+  def find_visit_concept_by_name_and_domain(cls, name, domain):
+    concepts_list = cls.find_visit_concept_by_name(name)
+
+    return list(filter(lambda x: x['preceding']['domain_id'].lower() == domain.lower(), concepts_list))
