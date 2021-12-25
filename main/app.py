@@ -14,6 +14,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 api = Api(app)
 
 from resources.person import *
+from resources.visit import *
 
 if __name__ == '__main__':
   db.init_app(app)
