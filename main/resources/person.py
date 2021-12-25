@@ -21,4 +21,4 @@ def personByEthnicity(ethnicity): # 민족별 환자 수
 @app.route('/person/death', methods=['GET'])
 def personByDeath(): # 사망 환자 수
    isDead = request.args.get('isDead') # 'True' or 'False'
-   return { 'count': len(PersonModel.find_person_by_death(isDead and 'True'))}
+   return { 'count': len(PersonModel.find_person_by_death(isDead == 'True'))}
