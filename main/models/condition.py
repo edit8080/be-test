@@ -43,7 +43,6 @@ class ConditionModel(db.Model):
   @classmethod
   def find_condition_concept_by_domain(cls, domain):
     concepts = db.session.query(ConditionModel).join(ConceptModel).filter(func.lower(ConceptModel.domain_id) == func.lower(domain)).all()
-    concepts = db.session.query(ConditionModel).join(ConceptModel).all()
     
     return [concept.json() for concept in concepts]
 
