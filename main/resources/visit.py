@@ -20,6 +20,10 @@ def visitByEthnicity(ethnicity): # 민족별 방문 수
 
 @app.route('/visit/age/<int:age_unit>', methods=['GET'])
 def visitByAge(age_unit): # 방문시 연령대(10세 단위)별 방문 수
-  # todo: age_unit 10세 단위 체크 
-  # todo: 잘못된 입력 체크
+  if age_unit < 0:
+    return { 'msg': 'The age must be positive'}, 400
+
+  if not(age_unit % 10 == 0):
+    return { 'msg': 'The age must be in units of 10'}, 400
+
   return { 'count': len(VisitModel.find_visit_by_age(age_unit)) }
