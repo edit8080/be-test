@@ -31,6 +31,18 @@ def visitStatByAge(age_unit): # 연령대(10세 단위)별 방문 수
 
   return { 'count': VisitModel.find_visit_by_age(age_unit)['total'] }
 
+### 2. concept 검색
+
+@app.route('/visit/concept', methods=['GET'])
+def visitConcept(): # 전체 concept
+  page_args = page_request_args()
+  return VisitModel.get_visit_concept(page_args['page'], page_args['per_page'])
+
+@app.route('/visit/concept/type', methods=['GET'])
+def visitTypeConcept(): # 방문 유형 concept 검색
+  page_args = page_request_args()
+  return VisitModel.get_visit_type_concept(page_args['page'], page_args['per_page'])
+
 ### 3. 방문 검색
 
 @app.route('/visit/type/<string:type>', methods=['GET'])
@@ -64,22 +76,3 @@ def visitByAge(age_unit): # 방문시 연령대(10세 단위)별 방문 수
   page_args = page_request_args()
   return VisitModel.find_visit_by_age(age_unit, page_args['page'], page_args['per_page'])
 
-@app.route('/visit/concept', methods=['GET'])
-def VisitByConcept():
-  name = request.args.get('name')
-  domain = request.args.get('domain')
-
-  page = request.args.get('page', type=int)
-  per_page = request.args.get('per_page', type=int)
-
-  if name and domain:
-    return VisitModel.find_visit_concept_by_name_and_domain(name, domain, page, per_page)
-
-  elif name:
-    return VisitModel.find_visit_concept_by_name(name, page, per_page)
-
-  elif domain:
-    return VisitModel.find_visit_concept_by_domain(domain, page, per_page)
-
-  else:
-    return { 'msg': 'use name or domain query string to search concept' }, 400

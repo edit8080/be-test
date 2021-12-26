@@ -81,30 +81,22 @@ class VisitModel(db.Model):
 
   ### concept 설명
   
-  def concept_serialize(self):
-    serialize = self.json()
-    return { 'visit_occurrence_id': serialize['visit_occurrence_id'], 'preceding': serialize['concept'] }
+  @classmethod
+  def get_visit_concept(cls, page=None, per_page=None):
+    concept = {}
+    concept['type'] = VisitModel.get_visit_type_concept(page, per_page)['concepts']['type']
+
+    return { 'concepts': concept }
 
   @classmethod
-  def find_visit_concept_by_name(cls, name, page, per_page):
-    concepts_sql = db.session.query(VisitModel).join(ConceptModel)\
-      .filter(ConceptModel.concept_name.ilike("%"+name+"%"))
+  def get_visit_type_concept(cls, page=None, per_page=None):
+    concept = {}
 
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.concept_serialize() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
+    # visit type concept
+    visit_type_concept_query = db.session.query(VisitModel)\
+      .join((ConceptModel, VisitModel.visit_concept_id == ConceptModel.concept_id))
 
-  @classmethod
-  def find_visit_concept_by_domain(cls, domain, page, per_page):
-    concepts_sql = db.session.query(VisitModel).join(ConceptModel)\
-      .filter(func.lower(ConceptModel.domain_id) == func.lower(domain))
-    
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.concept_serialize() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
+    visit_concept = Pagination(page, per_page).set_pagination(visit_type_concept_query)
+    concept['type'] = list(set([visit.json()['visit_concept_name'] for visit in visit_concept['items']]))
 
-  @classmethod
-  def find_visit_concept_by_name_and_domain(cls, name, domain, page, per_page):
-    concepts_sql = db.session.query(VisitModel).join(ConceptModel)\
-      .filter((ConceptModel.concept_name.ilike("%"+name+"%")) & (func.lower(ConceptModel.domain_id) == func.lower(domain)))
-    
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.concept_serialize() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
+    return { 'concepts': concept }
