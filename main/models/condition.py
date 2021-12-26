@@ -1,6 +1,7 @@
 from app import db
 from sqlalchemy import func
 from models.concept import ConceptModel
+from common.cls.pagination import Pagination
 
 class ConditionModel(db.Model):
   __tablename__ = 'condition_occurrence'
@@ -35,19 +36,25 @@ class ConditionModel(db.Model):
   ### concept 설명
 
   @classmethod
-  def find_condition_concept_by_name(cls, name):
-    concepts = db.session.query(ConditionModel).join(ConceptModel).filter(ConceptModel.concept_name.ilike("%"+name+"%")).all()
+  def find_condition_concept_by_name(cls, name, page, per_page):
+    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
+      .filter(ConceptModel.concept_name.ilike("%"+name+"%"))
 
-    return [concept.json() for concept in concepts]
+    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
+    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
 
   @classmethod
-  def find_condition_concept_by_domain(cls, domain):
-    concepts = db.session.query(ConditionModel).join(ConceptModel).filter(func.lower(ConceptModel.domain_id) == func.lower(domain)).all()
+  def find_condition_concept_by_domain(cls, domain, page, per_page):
+    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
+      .filter(func.lower(ConceptModel.domain_id) == func.lower(domain))
     
-    return [concept.json() for concept in concepts]
+    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
+    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
 
   @classmethod
-  def find_condition_concept_by_name_and_domain(cls, name, domain):
-    concepts_list = cls.find_condition_concept_by_name(name)
+  def find_condition_concept_by_name_and_domain(cls, name, domain, page, per_page):
+    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
+      .filter((ConceptModel.concept_name.ilike("%"+name+"%")) & (func.lower(ConceptModel.domain_id) == func.lower(domain)))
 
-    return list(filter(lambda x: x['concept']['domain_id'].lower() == domain.lower(), concepts_list))
+    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
+    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
