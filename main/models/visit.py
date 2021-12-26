@@ -1,90 +1,73 @@
+from datetime import datetime
 from app import db
 from sqlalchemy import func
 from models.person import PersonModel
 from models.concept import ConceptModel
 from common.cls.pagination import Pagination
 
-# Visit : Person = 1 : N
 class VisitModel(db.Model):
   __tablename__ = "visit_occurrence"
   visit_occurrence_id = db.Column(db.BigInteger, primary_key=True)
-  visit_concept_id = db.Column(db.Integer)
   visit_start_datetime = db.Column(db.DateTime)
   visit_end_datetime = db.Column(db.DateTime)
 
   person_id = db.Column(db.BigInteger, db.ForeignKey('person.person_id'))
   person = db.relationship('PersonModel')
 
-  preceding_visit_occurrence_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
-  concept = db.relationship('ConceptModel')
+  visit_concept_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  concept = db.relationship('ConceptModel', foreign_keys=visit_concept_id)
 
-  @classmethod
-  def check_visit_concept(cls, visit_concept_id):
-    visit_concept = {
-      9201: 'Inpatient Visit',
-      9202: 'Outpatient Visit',
-      9203: 'Emergency Room Visit'
-    }
-    return visit_concept[visit_concept_id]
+  preceding_visit_occurrence_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  preceding_concept = db.relationship('ConceptModel', foreign_keys=preceding_visit_occurrence_id)
 
   def json(self):
     return {
       'visit_occurrence_id': self.visit_occurrence_id,
-      'visit_concept': VisitModel.check_visit_concept(self.visit_concept_id),
-      'visit_start_datetime': self.visit_start_datetime,
-      'visit_end_datetime': self.visit_end_datetime,
-      'person': self.person.json(),
-      'concept': self.concept.json()
-    }
-
-  def tuple_to_json(self):
-    return {
-      'visit_occurrence_id': self.visit_occurrence_id,
-      'visit_concept': VisitModel.check_visit_concept(self.visit_concept_id),
+      'visit_concept_name': self.concept.json()['concept_name'],
       'visit_start_datetime': self.visit_start_datetime,
       'visit_end_datetime': self.visit_end_datetime,
       'person': self.person.json()
     }
 
   @classmethod
-  def find_visit_by_type(cls, type): # type = 'Inpatient' | 'Outpatient' | 'Emergency'
-    visit_type_to_concept_id = {
-      'Inpatient': 9201,
-      'Outpatient': 9202,
-      'Emergency': 9203
-    }
-    return [ visit.json() for visit in cls.query.filter_by(visit_concept_id=visit_type_to_concept_id[type]).all()]
+  def find_visit_by_type(cls, type, page=None, per_page=None):
+    visit_query = db.session.query(VisitModel)\
+      .join((ConceptModel, VisitModel.visit_concept_id == ConceptModel.concept_id))\
+      .filter(ConceptModel.concept_name.ilike('%'+type+'%'))
+    visits = Pagination(page, per_page).set_pagination(visit_query)
+
+    return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
-  def find_visit_by_gender(cls, gender): # gender = 'M' | 'F'
-    return [ visit.json() for visit in db.session.query(VisitModel).join(PersonModel).filter(PersonModel.gender_source_value == gender).all()]
+  def find_visit_by_gender(cls, gender, page=None, per_page=None):
+    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.gender_source_value == gender)
+    visits = Pagination(page, per_page).set_pagination(visit_query)
+
+    return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
-  def find_visit_by_race(cls, race): # race = 'asian' | 'black' | 'white' | 'native' | 'other'
-    return [ visit.json() for visit in db.session.query(VisitModel).join(PersonModel).filter(PersonModel.race_source_value == race).all()]
+  def find_visit_by_race(cls, race, page=None, per_page=None):
+    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.race_source_value == race)
+    visits = Pagination(page, per_page).set_pagination(visit_query)
+
+    return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
-  def find_visit_by_ethnicity(cls, ethnicity): # ethnicity = 'hispanic' | 'nonhispanic'
-    return [ visit.json() for visit in db.session.query(VisitModel).join(PersonModel).filter(PersonModel.ethnicity_source_value == ethnicity).all()]
+  def find_visit_by_ethnicity(cls, ethnicity, page=None, per_page=None):
+    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.ethnicity_source_value == ethnicity)
+    visits = Pagination(page, per_page).set_pagination(visit_query)
+
+    return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
-  def convert_find_by_age_json(cls, row):
-    return {
-      'visit_occurrence_id': row[0],
-      'visit_concept': VisitModel.check_visit_concept(row[1]),
-      'visit_start_datetime': row[2],
-      'visit_end_datetime': row[3],
-      'person_id': row[4],
-      'birth_datetime': row[5]
-    }
+  def find_visit_by_age(cls, age_unit, page=None, per_page=None): # age_unit = 10 unit (10, 20, ...)
+    today = datetime.today()
+    age = func.extract('year', func.age(today, PersonModel.birth_datetime))
 
-  @classmethod
-  def find_visit_by_age(cls, age_unit): # age_unit = 10 unit (10, 20, ...)
-    statement = 'SELECT visit_occurrence_id, visit_concept_id, visit_start_date, visit_end_date, v.person_id, birth_datetime \
-      FROM visit_occurrence AS v JOIN person AS p ON v.person_id = p.person_id\
-      WHERE EXTRACT(year FROM AGE(CURRENT_DATE, birth_datetime)) BETWEEN :age_unit_start AND :age_unit_end'
+    visit_query = db.session.query(VisitModel).join(PersonModel).filter((age >= age_unit) & (age <= age_unit+9))
+    visits = Pagination(page, per_page).set_pagination(visit_query)
 
-    return [cls.convert_find_by_age_json(visit) for visit in db.session.execute(statement, {'age_unit_start': age_unit, 'age_unit_end': age_unit + 9} ).all()] # SQL execute result -> tuple Array
+    return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   ### concept 설명
   
