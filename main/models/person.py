@@ -85,9 +85,9 @@ class PersonModel(db.Model):
   def get_person_concept(cls, page=None, per_page=None):
     concept = {}
 
-    concept['gender'] = PersonModel.get_person_gender_concept(page, per_page)['concepts']
-    concept['race'] = PersonModel.get_person_race_concept(page, per_page)['concepts']
-    concept['ethnicity'] = PersonModel.get_person_ethnicity_concept(page, per_page)['concepts']
+    concept['gender'] = PersonModel.get_person_gender_concept(page, per_page)['concepts']['gender']
+    concept['race'] = PersonModel.get_person_race_concept(page, per_page)['concepts']['race']
+    concept['ethnicity'] = PersonModel.get_person_ethnicity_concept(page, per_page)['concepts']['ethnicity']
 
     return { 'concepts': concept }
 
