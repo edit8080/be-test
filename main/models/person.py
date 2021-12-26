@@ -38,8 +38,8 @@ class PersonModel(db.Model):
     return { 'person': [person.json() for person in people['items']], 'page': people['page'], 'total': people['total'] } 
 
   @classmethod
-  def find_person(cls, person_id):
-    person = cls.query.filter_by(person_id=person_id).first()
+  def find_person_by_id(cls, id):
+    person = cls.query.filter_by(person_id=id).first()
 
     return { 'person': person.json() }
 

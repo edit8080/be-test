@@ -57,7 +57,7 @@ def person(): # 전체 환자 검색
 
 @app.route('/person/<string:person_id>', methods=['GET'])
 def personById(person_id): # 환자ID 검색
-  return PersonModel.find_person(person_id)
+  return PersonModel.find_person_by_id(person_id)
 
 @app.route('/person/gender/<string:gender>', methods=['GET'])
 def personByGender(gender): # 성별 환자 검색
