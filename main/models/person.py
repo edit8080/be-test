@@ -80,3 +80,52 @@ class PersonModel(db.Model):
 
     people = Pagination(page, per_page).set_pagination(person_query)
     return { 'person': [person.json() for person in people['items']], 'page': people['page'], 'total': people['total'] } 
+
+  @classmethod
+  def get_person_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    concept['gender'] = PersonModel.get_person_gender_concept(page, per_page)['concepts']
+    concept['race'] = PersonModel.get_person_race_concept(page, per_page)['concepts']
+    concept['ethnicity'] = PersonModel.get_person_ethnicity_concept(page, per_page)['concepts']
+
+    return { 'concepts': concept }
+
+  @classmethod
+  def get_person_gender_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    # gender concept
+    people_concept_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.gender_concept_id == ConceptModel.concept_id))
+
+    people_concept = Pagination(page, per_page).set_pagination(people_concept_query)
+    concept['gender'] = list(set([person.json()['gender'] for person in people_concept['items']]))
+
+    return { 'concepts': concept }
+
+  @classmethod
+  def get_person_race_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    # race concept
+    people_concept_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.race_concept_id == ConceptModel.concept_id))
+
+    people_concept = Pagination(page, per_page).set_pagination(people_concept_query)
+    concept['race'] = list(set([person.json()['race'] for person in people_concept['items']]))
+
+    return { 'concepts': concept }
+
+  @classmethod
+  def get_person_ethnicity_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    # ethnicity concept
+    people_concept_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.ethnicity_concept_id == ConceptModel.concept_id))
+
+    people_concept = Pagination(page, per_page).set_pagination(people_concept_query)
+    concept['ethnicity'] = list(set([person.json()['ethnicity'] for person in people_concept['items']]))
+
+    return { 'concepts': concept }

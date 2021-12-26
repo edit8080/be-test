@@ -26,6 +26,28 @@ def personStatByDeath(): # 사망 환자 수
    isDead = request.args.get('isDead') # 'True' or 'False'
    return { 'count': PersonModel.find_person_by_death(isDead == 'True')['total'] }
 
+### 2. concept 검색
+
+@app.route('/person/concept', methods=['GET'])
+def personConcept(): # 전체 concept 검색
+  page_args = page_request_args()
+  return PersonModel.get_person_concept(page_args['page'], page_args['per_page'])
+
+@app.route('/person/concept/gender', methods=['GET'])
+def personGenderConcept(): # 성별 concept 검색
+  page_args = page_request_args()
+  return PersonModel.get_person_gender_concept(page_args['page'], page_args['per_page'])
+
+@app.route('/person/concept/race', methods=['GET'])
+def personRaceConcept(): # 인종 concept 검색 
+  page_args = page_request_args()
+  return PersonModel.get_person_race_concept(page_args['page'], page_args['per_page'])
+
+@app.route('/person/concept/ethnicity', methods=['GET'])
+def personEthnicityConcept(): # 민족 concept 검색
+  page_args = page_request_args()
+  return PersonModel.get_person_ethnicity_concept(page_args['page'], page_args['per_page'])
+
 ### 3. 환자 검색
 
 @app.route('/person', methods=['GET'])
