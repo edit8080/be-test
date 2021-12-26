@@ -19,14 +19,8 @@ class ConditionModel(db.Model):
   visit = db.relationship('VisitModel')
 
   def json(self):
-    condition_serialize = self.concept.json()
-
     return {
-      'concept': {
-        'concept_id': self.condition_concept_id,
-        'concept_name': condition_serialize['concept_name'],
-        'domain_id': condition_serialize['domain_id'],
-      },
+      'condition_concept_name': self.concept.json()['concept_name'],
       'condition_start_datetime': self.condition_start_datetime,
       'condition_end_datetime': self.condition_end_datetime,
       'person_id': self.person_id,
