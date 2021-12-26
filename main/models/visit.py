@@ -23,7 +23,7 @@ class VisitModel(db.Model):
   def json(self):
     return {
       'visit_occurrence_id': self.visit_occurrence_id,
-      'visit_concept_name': self.concept.json()['concept_name'],
+      'visit_concept_name': self.concept.concept_name,
       'visit_start_datetime': self.visit_start_datetime,
       'visit_end_datetime': self.visit_end_datetime,
       'person': self.person.json()
