@@ -20,26 +20,36 @@ class DrugModel(db.Model):
 
   def json(self):
     return {
-      'drug_concept_name': self.concept.json()['concept_name'],      
+      'drug_exposure_name': self.concept.json()['concept_name'],      
       'drug_exposure_start_datetime': self.drug_exposure_start_datetime,
       'drug_exposure_end_datetime': self.drug_exposure_end_datetime,
       'person_id': self.person_id,
       'visit_occurrence_id': self.visit_occurrence_id
     }
 
-  ### concept 설명
+  @classmethod
+  def get_drug_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    # drug concept
+    drug_concept_query = db.session.query(DrugModel).join(ConceptModel)
+
+    drug_concept = Pagination(page, per_page).set_pagination(drug_concept_query)
+    concept['drug_exposure'] = list(set([drug.json()['drug_exposure_name'] for drug in drug_concept['items']]))
+
+    return { 'concepts': concept }
 
   @classmethod
   def get_drug_exposure(cls, page, per_page):
     drug_sql = db.session.query(DrugModel).join(ConceptModel)
-    drug = Pagination(page, per_page).set_pagination(drug_sql)
 
-    return { 'concepts': [concept.json() for concept in drug['items']], 'page': drug['page'], 'total': drug['total'] } 
+    drugs = Pagination(page, per_page).set_pagination(drug_sql)
+    return { 'drugs': [drug.json() for drug in drugs['items']], 'page': drugs['page'], 'total': drugs['total'] } 
 
   @classmethod
-  def find_drug_concept_by_name(cls, name, page, per_page):
-    concepts_sql = db.session.query(DrugModel).join(ConceptModel)\
+  def find_drug_by_name(cls, name, page, per_page):
+    drug_sql = db.session.query(DrugModel).join(ConceptModel)\
       .filter(ConceptModel.concept_name.ilike("%"+name+"%"))
 
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
+    drugs = Pagination(page, per_page).set_pagination(drug_sql)
+    return { 'drugs': [drug.json() for drug in drugs['items']], 'page': drugs['page'], 'total': drugs['total'] } 
