@@ -30,26 +30,16 @@ class DrugModel(db.Model):
   ### concept 설명
 
   @classmethod
+  def get_drug_exposure(cls, page, per_page):
+    drug_sql = db.session.query(DrugModel).join(ConceptModel)
+    drug = Pagination(page, per_page).set_pagination(drug_sql)
+
+    return { 'concepts': [concept.json() for concept in drug['items']], 'page': drug['page'], 'total': drug['total'] } 
+
+  @classmethod
   def find_drug_concept_by_name(cls, name, page, per_page):
     concepts_sql = db.session.query(DrugModel).join(ConceptModel)\
       .filter(ConceptModel.concept_name.ilike("%"+name+"%"))
-
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
-
-
-  @classmethod
-  def find_drug_concept_by_domain(cls, domain, page, per_page):
-    concepts_sql = db.session.query(DrugModel).join(ConceptModel)\
-      .filter(func.lower(ConceptModel.domain_id) == func.lower(domain))
-
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
-
-  @classmethod
-  def find_drug_concept_by_name_and_domain(cls, name, domain, page, per_page):
-    concepts_sql = db.session.query(DrugModel).join(ConceptModel)\
-      .filter((ConceptModel.concept_name.ilike("%"+name+"%")) & (func.lower(ConceptModel.domain_id) == func.lower(domain)))
 
     concepts = Pagination(page, per_page).set_pagination(concepts_sql)
     return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
