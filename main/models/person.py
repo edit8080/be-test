@@ -1,24 +1,32 @@
+from sqlalchemy.sql.functions import func
 from app import db
+from models.concept import ConceptModel
 from models.death import DeathModel
 from common.cls.pagination import Pagination
 
 class PersonModel(db.Model):
   __tablename__ = "person"
   person_id = db.Column(db.BigInteger, primary_key=True)
-  gender_source_value = db.Column(db.String(50), db.ForeignKey('concept.concept_id'))
   birth_datetime = db.Column(db.DateTime)
-  race_source_value = db.Column(db.String(50), db.ForeignKey('concept.concept_id'))
-  ethnicity_source_value = db.Column(db.String(50))
-  
+
+  gender_concept_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  gender_concept = db.relationship('ConceptModel', foreign_keys=gender_concept_id)
+
+  race_concept_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  race_concept = db.relationship('ConceptModel', foreign_keys=race_concept_id)
+
+  ethnicity_concept_id = db.Column(db.Integer, db.ForeignKey('concept.concept_id'))
+  ethnicity_concept = db.relationship('ConceptModel', foreign_keys=ethnicity_concept_id)
+
   death = db.relationship('DeathModel')
 
   def json(self):
     return {
       'person_id': self.person_id,
-      'gender': self.gender_source_value,
+      'gender': self.gender_concept.concept_name,
       'birth': self.birth_datetime,
-      'race': self.race_source_value,
-      'ethnicity': self.ethnicity_source_value,
+      'race': self.race_concept.concept_name,
+      'ethnicity': self.ethnicity_concept.concept_name,
       'death': False if len(self.death) == 0 else True
     }
 
@@ -37,21 +45,28 @@ class PersonModel(db.Model):
 
   @classmethod
   def find_person_by_gender(cls, gender, page=None, per_page=None):
-    person_query = cls.query.filter_by(gender_source_value=gender)
+    person_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.gender_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(gender))
+
     people = Pagination(page, per_page).set_pagination(person_query)
 
     return { 'person': [person.json() for person in people['items']], 'page': people['page'], 'total': people['total'] } 
 
   @classmethod
   def find_person_by_race(cls, race, page=None, per_page=None):
-    person_query = cls.query.filter_by(race_source_value=race)
+    person_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.race_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(race))
     people = Pagination(page, per_page).set_pagination(person_query)
 
     return { 'person': [person.json() for person in people['items']], 'page': people['page'], 'total': people['total'] } 
 
   @classmethod
   def find_person_by_ethnicity(cls, ethnicity, page=None, per_page=None):
-    person_query = cls.query.filter_by(ethnicity_source_value=ethnicity)
+    person_query = db.session.query(PersonModel)\
+      .join((ConceptModel, PersonModel.ethnicity_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(ethnicity))
     people = Pagination(page, per_page).set_pagination(person_query)
 
     return { 'person': [person.json() for person in people['items']], 'page': people['page'], 'total': people['total'] } 
