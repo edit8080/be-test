@@ -19,14 +19,8 @@ class DrugModel(db.Model):
   visit = db.relationship('VisitModel')
 
   def json(self):
-    condition_serialize = self.concept.json()
-
     return {
-      'concept': {
-        'concept_id': self.drug_concept_id,
-        'concept_name': condition_serialize['concept_name'],
-        'domain_id': condition_serialize['domain_id'],
-      },      
+      'drug_concept_name': self.concept.json()['concept_name'],      
       'drug_exposure_start_datetime': self.drug_exposure_start_datetime,
       'drug_exposure_end_datetime': self.drug_exposure_end_datetime,
       'person_id': self.person_id,
