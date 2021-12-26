@@ -34,27 +34,37 @@ class VisitModel(db.Model):
     visit_query = db.session.query(VisitModel)\
       .join((ConceptModel, VisitModel.visit_concept_id == ConceptModel.concept_id))\
       .filter(ConceptModel.concept_name.ilike('%'+type+'%'))
+
     visits = Pagination(page, per_page).set_pagination(visit_query)
 
     return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
   def find_visit_by_gender(cls, gender, page=None, per_page=None):
-    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.gender_source_value == gender)
+    visit_query = db.session.query(VisitModel)\
+      .join(PersonModel).join((ConceptModel, PersonModel.gender_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(gender))
+
     visits = Pagination(page, per_page).set_pagination(visit_query)
 
     return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
   def find_visit_by_race(cls, race, page=None, per_page=None):
-    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.race_source_value == race)
+    visit_query = db.session.query(VisitModel)\
+      .join(PersonModel).join((ConceptModel, PersonModel.race_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(race))
+
     visits = Pagination(page, per_page).set_pagination(visit_query)
 
     return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
 
   @classmethod
   def find_visit_by_ethnicity(cls, ethnicity, page=None, per_page=None):
-    visit_query = db.session.query(VisitModel).join(PersonModel).filter(PersonModel.ethnicity_source_value == ethnicity)
+    visit_query = db.session.query(VisitModel)\
+      .join(PersonModel).join((ConceptModel, PersonModel.ethnicity_concept_id == ConceptModel.concept_id))\
+      .filter(func.lower(ConceptModel.concept_name) == func.lower(ethnicity))
+    
     visits = Pagination(page, per_page).set_pagination(visit_query)
 
     return { 'visits': [visit.json() for visit in visits['items']], 'page': visits['page'], 'total': visits['total'] } 
