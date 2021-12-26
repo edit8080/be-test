@@ -22,3 +22,7 @@ def drug():
 
   else:
     return DrugModel.get_drug_exposure(page_args['page'], page_args['per_page'])
+
+@app.route('/drug/<string:drug_id>', methods=['GET'])
+def drugById(drug_id):
+  return DrugModel.find_drug_by_id(drug_id)

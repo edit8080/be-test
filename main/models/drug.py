@@ -20,6 +20,7 @@ class DrugModel(db.Model):
 
   def json(self):
     return {
+      'drug_exposure_id': self.drug_exposure_id,
       'drug_exposure_name': self.concept.json()['concept_name'],      
       'drug_exposure_start_datetime': self.drug_exposure_start_datetime,
       'drug_exposure_end_datetime': self.drug_exposure_end_datetime,
@@ -45,6 +46,12 @@ class DrugModel(db.Model):
 
     drugs = Pagination(page, per_page).set_pagination(drug_sql)
     return { 'drugs': [drug.json() for drug in drugs['items']], 'page': drugs['page'], 'total': drugs['total'] } 
+
+  @classmethod
+  def find_drug_by_id(cls, id):
+    drug = cls.query.filter(cls.drug_exposure_id == id).first()
+
+    return { 'drug': drug.json() }
 
   @classmethod
   def find_drug_by_name(cls, name, page, per_page):
