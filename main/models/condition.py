@@ -20,6 +20,7 @@ class ConditionModel(db.Model):
 
   def json(self):
     return {
+      'condition_occurrence_id': self.condition_occurrence_id,
       'condition_concept_name': self.concept.json()['concept_name'],
       'condition_start_datetime': self.condition_start_datetime,
       'condition_end_datetime': self.condition_end_datetime,
@@ -27,28 +28,35 @@ class ConditionModel(db.Model):
       'visit_occurrence_id': self.visit_occurrence_id
     }
 
-  ### concept 설명
+  @classmethod
+  def get_condition_concept(cls, page=None, per_page=None):
+    concept = {}
+
+    # condition concept
+    condition_concept_query = db.session.query(ConditionModel).join(ConceptModel)
+
+    condition_concepts = Pagination(page, per_page).set_pagination(condition_concept_query)
+    concept['condition_concept'] = list(set([condition.json()['condition_concept_name'] for condition in condition_concepts['items']]))
+
+    return { 'concepts': concept }
 
   @classmethod
-  def find_condition_concept_by_name(cls, name, page, per_page):
-    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
+  def get_condition_occurrence(cls, page, per_page):
+    condition_query = db.session.query(ConditionModel).join(ConceptModel)
+
+    conditions = Pagination(page, per_page).set_pagination(condition_query)
+    return { 'conditions': [condition.json() for condition in conditions['items']], 'page': conditions['page'], 'total': conditions['total'] } 
+
+  @classmethod
+  def find_condition_by_id(cls, id):
+    condition = cls.query.filter(cls.condition_occurrence_id == id).first()
+
+    return { 'condition': condition.json() }
+
+  @classmethod
+  def find_condition_by_name(cls, name, page, per_page):
+    condition_query = db.session.query(ConditionModel).join(ConceptModel)\
       .filter(ConceptModel.concept_name.ilike("%"+name+"%"))
 
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
-
-  @classmethod
-  def find_condition_concept_by_domain(cls, domain, page, per_page):
-    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
-      .filter(func.lower(ConceptModel.domain_id) == func.lower(domain))
-    
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
-
-  @classmethod
-  def find_condition_concept_by_name_and_domain(cls, name, domain, page, per_page):
-    concepts_sql = db.session.query(ConditionModel).join(ConceptModel)\
-      .filter((ConceptModel.concept_name.ilike("%"+name+"%")) & (func.lower(ConceptModel.domain_id) == func.lower(domain)))
-
-    concepts = Pagination(page, per_page).set_pagination(concepts_sql)
-    return { 'concepts': [concept.json() for concept in concepts['items']], 'page': concepts['page'], 'total': concepts['total'] } 
+    conditions = Pagination(page, per_page).set_pagination(condition_query)
+    return { 'conditions': [condition.json() for condition in conditions['items']], 'page': conditions['page'], 'total': conditions['total'] } 
