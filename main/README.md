@@ -9,7 +9,7 @@
 페이지네이션은 `page`와 `per_page` 속성명을 통한 쿼리 스트링으로 사용할 수 있습니다. <br />
 단일 결과를 response 하는 일부 API 에는 페이지네이션이 적용되어있지 않습니다. (ex: id를 통한 검색) <br />
 
-## person
+## 😷 person
 
 ### 1. 환자 수 통계
 
@@ -239,7 +239,7 @@ response : {
 </details>
 
 
-## visit_occurrence
+## 🏥 visit_occurrence
 
 ### 1. 방문 수 통계
 
@@ -467,7 +467,7 @@ response : {
 ```
 </details>
 
-## drug_exposure
+## 💊 drug_exposure
 
 ### 1. 의약품 concept 검색
 
@@ -535,7 +535,7 @@ response : {
 </details>
 
 
-## condition_occurrence
+## 👨‍⚕ condition_occurrence
 
 ### 1. 진단 concept 검색
 
