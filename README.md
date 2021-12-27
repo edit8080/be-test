@@ -15,7 +15,7 @@ DB 서버 주소 유출 방지를 위해 .env 파일을 사용하였습니다. <
 .env 파일 내용은 다음과 같습니다.
 
 ```text
-SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://[username][password]@[HOST_IP]:[Port]/[Database]'
+SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://[username]:[password]@[HOST_IP]:[Port]/[Database]'
 ```
 
 .env 파일은 main 폴더와 동일한 경로에 위치합니다.
