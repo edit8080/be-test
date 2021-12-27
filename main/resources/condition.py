@@ -9,7 +9,7 @@ from common.helpers.pagination import page_request_args
 def conditionConcept():
   page_args = page_request_args()
 
-  return ConditionModel.get_condition_occurrence(page_args['page'], page_args['per_page'])
+  return ConditionModel.get_condition_concept(page_args['page'], page_args['per_page'])
 
 ## 3. column 검색
 
