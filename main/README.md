@@ -1,10 +1,10 @@
 # 🔎 구성 API 설명
 
-- request & response
+### request & response
     - request 는 모두 GET 방식을 활용합니다.
     - response 는 모두 JSON 형식으로 데이터를 반환합니다.
 
-- pagination <br />
+### pagination <br />
 각 API 는 기본적으로 페이지네이션이 적용되어있습니다. <br />
 페이지네이션은 `page`와 `per_page` 속성명을 통한 쿼리 스트링으로 사용할 수 있습니다. <br />
 단일 결과를 response 하는 일부 API 에는 페이지네이션이 적용되어있지 않습니다. (ex: id를 통한 검색) <br />

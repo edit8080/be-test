@@ -46,7 +46,7 @@ $ python main/app.py
 4. 키워드 검색 기능 추가 완료
 5. 각 테이블의 row 조회 API 일부 구성 완료
 
-🔎 상세 API 사용방법은 main 폴더의 README 를 참고하세요.
+🔎 상세 API 사용방법은 main 폴더의 [README](https://github.com/edit8080/be-test/tree/main/main) 를 참고하세요.
 
 ## 4. ⚠️ 미구현점
 
